@@ -1,0 +1,286 @@
+{
+  "result": {
+    "tools": [
+      {
+        "name": "propertySearch",
+        "description": "Search for on market properties(i.e. listings) by location (state, city, suburb, postcode, street, LGA, school), property type, price range, bedrooms, bathrooms, car spaces, land size, features, sale method (sale/auction), and sorting options. This tool supports searching across multiple locations simultaneously. Use this when users want to find on market properties matching specific criteria across one or more locations.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "locations": {
+              "description": "Location details including state (required), and optional city, region, suburb, postcode, street name, Local Government Area (LGA) or Council, or school. \n\t\t\t\tNote: In cases where there is ambiguity between location types (e.g., 'Melbourne, VIC 3000' could refer to either the city of Melbourne or a suburb with postcode 3000), it's better to ask the user for confirmation rather than assuming. If the location name is one of the major Australian cities (Sydney, Melbourne, Brisbane, Perth, Adelaide, Canberra) without a postcode specified, always treat it as a city search.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "enum": [
+                      "act",
+                      "nsw",
+                      "nt",
+                      "qld",
+                      "sa",
+                      "tas",
+                      "vic",
+                      "wa",
+                      "ot"
+                    ]
+                  },
+                  "city": {
+                    "description": "City name",
+                    "type": "string"
+                  },
+                  "suburbName": {
+                    "description": "Suburb name",
+                    "type": "string"
+                  },
+                  "suburbNameSlug": {
+                    "description": "This field is required when suburbName is provided. URL-friendly version of suburb name: lowercase with hyphens. Examples: 'bondi-beach', 'double-bay', 'mosman', 'surry-hills'",
+                    "type": "string"
+                  },
+                  "postcode": {
+                    "description": "This field is required when suburbName is provided",
+                    "type": "string"
+                  },
+                  "streetName": {
+                    "description": "Street name",
+                    "type": "string"
+                  },
+                  "streetNameSlug": {
+                    "description": "This field is required when streetName is provided. URL-friendly version of street name: lowercase with hyphens. Examples: 'oxford-street', 'george-street', 'collins-street', 'pitt-street'",
+                    "type": "string"
+                  },
+                  "lgaName": {
+                    "description": "Local Government Area (LGA) or Council name",
+                    "type": "string"
+                  },
+                  "lgaSlug": {
+                    "description": "This field is required when lgaName is provided. URL-friendly version of Local Government Area (LGA) or Council name: lowercase with hyphens. Examples: 'waverley-council', 'blacktown-city-council', 'sutherland-shire-council'",
+                    "type": "string"
+                  },
+                  "schoolName": {
+                    "description": "School name",
+                    "type": "string"
+                  },
+                  "schoolNameSlug": {
+                    "description": "This field is required when schoolName is provided. URL-friendly version of school name: lowercase with hyphens. Examples: 'sydney-grammar-school', 'melbourne-high-school', 'brisbane-state-high-school', 'scotch-college-adelaide'",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "state"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "coordinates": {
+              "description": "Latitude and longitude coordinates for location-based search",
+              "type": "object",
+              "properties": {
+                "latitude": {
+                  "description": "Latitude coordinate (-90 to 90)",
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90
+                },
+                "longitude": {
+                  "description": "Longitude coordinate (-180 to 180)",
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                },
+                "radius": {
+                  "description": "Search radius in kilometers (0-50, default: 5)",
+                  "default": 5,
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 50
+                }
+              },
+              "required": [
+                "radius"
+              ],
+              "additionalProperties": false
+            },
+            "propertyTypes": {
+              "description": "Type of property",
+              "type": "array",
+              "items": {
+                "enum": [
+                  "House",
+                  "Apartment & Unit",
+                  "Studio",
+                  "Townhouse",
+                  "Land",
+                  "Villa",
+                  "Rural"
+                ]
+              }
+            },
+            "priceFrom": {
+              "description": "Minimum price",
+              "type": "number"
+            },
+            "priceTo": {
+              "description": "Maximum price",
+              "type": "number"
+            },
+            "bedrooms": {
+              "description": "Number of bedrooms",
+              "type": "number"
+            },
+            "bathrooms": {
+              "description": "Number of bathrooms",
+              "type": "number"
+            },
+            "carparks": {
+              "description": "Number of car spaces",
+              "type": "number"
+            },
+            "landSizeMin": {
+              "description": "Minimum land size in square meters",
+              "type": "number"
+            },
+            "landSizeMax": {
+              "description": "Maximum land size in square meters",
+              "type": "number"
+            },
+            "features": {
+              "description": "Special features (e.g. pool, air conditioning)",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "page": {
+              "description": "Page number",
+              "default": 1,
+              "type": "number",
+              "minimum": 1
+            },
+            "sortBy": {
+              "description": "Sort results by",
+              "default": "recommended",
+              "enum": [
+                "recommended",
+                "price-asc",
+                "price-desc",
+                "date-desc",
+                "updatedAt-desc",
+                "suburb-asc",
+                "suburb-desc",
+                "bedrooms-desc",
+                "bedrooms-asc"
+              ]
+            },
+            "saleMethod": {
+              "description": "Sale method (e.g. Sale, Auction)",
+              "default": [
+                "Sale"
+              ],
+              "type": "array",
+              "items": {
+                "enum": [
+                  "Lease",
+                  "Sale",
+                  "Sold",
+                  "Auction"
+                ]
+              }
+            },
+            "includeP360Properties": {
+              "description": "Whether to include P360 properties",
+              "default": false,
+              "type": "boolean"
+            },
+            "exactBeds": {
+              "description": "Whether to match exact number of bedrooms",
+              "type": "boolean"
+            },
+            "exactBaths": {
+              "description": "Whether to match exact number of bathrooms",
+              "type": "boolean"
+            },
+            "exactCars": {
+              "description": "Whether to match exact number of car spaces",
+              "type": "boolean"
+            },
+            "includeSurrounding": {
+              "description": "Whether to include surrounding suburbs",
+              "default": true,
+              "type": "boolean"
+            },
+            "inspectionStartAt": {
+              "description": "Start time for inspections"
+            },
+            "excludeUnderContract": {
+              "description": "Whether to exclude properties under contract",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "page",
+            "sortBy",
+            "saleMethod",
+            "includeP360Properties",
+            "includeSurrounding",
+            "excludeUnderContract"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "propertyDetail",
+        "description": "Get comprehensive on market property (also known as a 'listing') details about a specific property listing by its ID. Returns information including address, property type, bedrooms, bathrooms, carparks, land size, price, status, property description, heading, inspection times, floor plans, statement of information (SOI), nearby schools, images, agency details, agent details, and zoning information (including zoning code, description, local government area, and planning overlays such as bushfire, flood, and heritage). Use this when users request specific information about a property they've identified by its listing ID.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "listingId": {
+              "description": "The listing ID. Example: 15550313",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "listingId"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "offMarketPropertyDetail",
+        "description": "Get comprehensive off market property details using a SEO slug. Returns information including address, property type, bedrooms, bathrooms, car spaces, land area, price estimates, zoning information (including zoning code, description, local government area, and planning overlays such asenvironment, infrastructure, industry, bushfire, flood and heritage), nearby schools, property history, and images. Use this when users request detailed information about a specific property they can identify by its SEO slug.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "seo_slug": {
+              "type": "string",
+              "minLength": 3
+            },
+            "isbot": {
+              "default": true,
+              "type": "boolean"
+            },
+            "includeArchistarAndNearBySchool": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "seo_slug",
+            "isbot",
+            "includeArchistarAndNearBySchool"
+          ],
+          "additionalProperties": false
+        }
+      }
+    ]
+  },
+  "jsonrpc": "2.0",
+  "id": 2
+}

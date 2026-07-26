@@ -1,0 +1,348 @@
+aid: view-com-au
+name: View.com.au
+review:
+  question: Does View.com.au expose a real, reachable, machine-readable API surface,
+    and what does a developer have to sign or join to use it?
+  answer: true
+  date: '2026-07-26'
+  reviewer: API Evangelist
+  summary: |
+    No developer portal, no OpenAPI, no published API program — but a completely
+    public, unauthenticated Model Context Protocol server at
+    https://mcp.view.com.au/mcp that returns live Australian listing data to any
+    anonymous caller. The inversion is the story: view.com.au's human web is
+    locked behind DataDome bot protection (HTTP 403 to every non-browser client,
+    x-datadome: protected), while its agent surface has no gate at all.
+sector: Real Estate
+homeMarket: Australia
+tier: portal-marketplace
+
+resoPosture:
+  certified: false
+  posture: >-
+    No RESO reference found. RESO (Real Estate Standards Organization) is a US
+    National Association of REALTORS construct and has no bearing on the
+    Australian portal market. Nothing named View, View Media Group, REA Group or
+    Domain appears in the RESO certified-organizations directory.
+  webApiCertification: none
+  dataDictionaryCertification: none
+  dataDictionaryVersion: null
+  upiSupport: none observed
+  odataMetadataDocument: none found
+  evidence:
+  - probe: https://www.reso.org/certification/
+    status: 200
+    date: '2026-07-26'
+    note: RESO certification landing page; points to the certified-organizations
+      list at https://www.reso.org/certificates/. Discusses 489 US MLS systems,
+      30+ Canadian, plus Central/South America, Europe and West Asia. Australia is
+      not mentioned.
+  - probe: https://www.reso.org/certificates/
+    status: 200
+    date: '2026-07-26'
+    note: Full certified-organizations directory fetched (416,233 bytes). Contains
+      374 occurrences of "Certified" and known certified bodies (Bright MLS,
+      CRMLS), and ZERO occurrences of "Australia", "View", "View Media", "REA
+      Group" or "Domain Group". Confirms View.com.au holds no RESO Web API or
+      Data Dictionary certification.
+  - probe: https://view.com.au/$metadata
+    status: 403
+    date: '2026-07-26'
+    note: DataDome challenge, not an OData service document. No OData/$metadata
+      surface is published anywhere on the domain.
+  australianContext: >-
+    Australia has no RESO equivalent and no government-mandated listing contract.
+    Listing intake to Australian portals is governed by commercial agreements
+    between portals and agency CRMs, and the de facto exchange format is REAXML —
+    an artifact of REA Group, the dominant competitor, not a neutral standard
+    body. View.com.au publishes nothing about its own listing-intake contract on
+    any publicly reachable page; every candidate page is DataDome-blocked, so this
+    review makes no claim about it. The genuinely mandated, machine-readable
+    Australian property rail is PEXA (electronic conveyancing/settlement), which
+    sits at the transaction end of the value chain and is unrelated to a portal's
+    listing surface.
+
+accessGate:
+  gate: self-serve
+  gateForCapturedSurface: >-
+    None. The MCP server at https://mcp.view.com.au/mcp accepted an anonymous
+    JSON-RPC POST with no API key, no OAuth token, no account, no application
+    form, no licence agreement, no MLS or board membership, and no broker or
+    agent sponsorship. A tools/call to propertySearch returned real on-market
+    Fitzroy VIC 3065 listings including addresses, prices, images, agency and
+    agent records.
+  mustSignOrJoin: nothing
+  rateLimit: 'ratelimit-policy: 100;w=300 (100 requests per 300 seconds), returned
+    on the MCP response headers'
+  contrastingGates:
+  - surface: https://api.view.com.au
+    gate: undocumented, authentication required
+    note: Real AWS API Gateway host (x-amz-apigw-id, x-amzn-requestid). Every path
+      probed returns HTTP 403 with x-amzn-errortype
+      MissingAuthenticationTokenException. This is a private/partner surface with
+      no published documentation, no portal, and no way for an outside developer
+      to request access. Not listed in apis.yml because nothing about it is
+      documented.
+  - surface: https://sandbox.api.view.com.au
+    gate: undocumented, authentication required
+    note: Resolves (54.252.9.146, 52.63.174.182, 52.62.240.58) and returns HTTP 403
+      application/json on /, /openapi.json and /docs. A sandbox exists; no public
+      onboarding path to it exists.
+  - surface: https://view.com.au/api/pubui/*
+    gate: internal front-end API
+    note: Explicitly Disallowed in https://view.com.au/robots.txt (HTTP 200). This
+      is the site's own UI JSON API, not a developer product. Not probed further
+      and not listed.
+
+openData:
+  exists: false
+  note: >-
+    Nothing View.com.au publishes is open data. Listing, agency, agent, sold and
+    off-market records are proprietary portal content sourced from agency feeds.
+    The MCP server is ungated but the data behind it is not open-licensed — free
+    to call is not the same as open data. Australian open counterweights exist
+    elsewhere (state land-registry and planning open data, ABS), not here.
+
+authModel:
+  mcpServer: none — anonymous, no credential of any kind accepted or required
+  restApi: AWS API Gateway native authorization (IAM/authorizer/API key
+    indeterminate from outside); MissingAuthenticationTokenException returned to
+    unauthenticated callers
+  openidConnect:
+    probe: https://view.com.au/.well-known/openid-configuration
+    status: 403
+    note: DataDome challenge, not an OIDC discovery document. No anonymous OIDC
+      metadata is served on the primary domain. Certificate transparency shows a
+      family of oauth*.resi.{uatz,stgz}.view.com.au hosts, but these are
+      non-production (UAT/staging) names, none resolve publicly, and no
+      conclusion about the production auth scheme is drawn from them.
+  mcpOAuth:
+    probes:
+    - url: https://mcp.view.com.au/.well-known/oauth-authorization-server
+      status: 404
+    - url: https://mcp.view.com.au/.well-known/oauth-protected-resource
+      status: 404
+    note: The MCP server implements no OAuth discovery. It is genuinely open.
+
+webhooksEventsSdksPostman:
+  webhooks: none found
+  events: none found
+  sdks: none found
+  postman: none found
+  githubOrganization:
+    url: https://github.com/realestateview
+    status: 200
+    note: The org exists (created 2012-10-04, display name "view.com.au") and has
+      0 public repositories. Present but empty — no SDKs, no specs, no samples.
+      Its name is also the strongest public evidence of the company's lineage as
+      realestateview.com.au.
+
+findings:
+  botProtection:
+    vendor: DataDome
+    evidence: 'HTTP 403 on every HTML path with headers x-datadome: protected,
+      x-datadome-cid, x-dd-b, and a datadome cookie scoped to .view.com.au'
+    affectedProbes: /, /developers, /api, /docs, /api-docs, /openapi.json,
+      /swagger.json, /$metadata, /.well-known/openid-configuration,
+      /.well-known/security.txt, /llms.txt, /mcp, /ai, /agents, /advertise
+    note: >-
+      This is the central irony of the profile. View.com.au spends money to stop
+      machines reading its web pages, and simultaneously runs an open MCP server
+      that hands the same data to machines in structured JSON. Both facts were
+      verified on the same day from the same client.
+  reachableWithoutBrowser:
+  - url: https://view.com.au/robots.txt
+    status: 200
+  - url: https://view.com.au/ads.txt
+    status: 200
+  - url: https://view.com.au/sitemap.xml
+    status: 200
+  - url: https://view.com.au/sitemap-agencies.xml
+    status: 200
+  mcpVerification:
+    endpoint: https://mcp.view.com.au/mcp
+    transport: streamable HTTP (text/event-stream responses), nginx/1.29.8 +
+      Express
+    initialize:
+      status: 200
+      protocolVersion: '2024-11-05'
+      serverInfo: view-com-au-mcp-server 1.0.0
+      capabilities: tools.listChanged
+      saved: mcp/view-com-au-mcp-initialize.json
+    toolsList:
+      status: 200
+      count: 3
+      tools:
+      - propertySearch
+      - propertyDetail
+      - offMarketPropertyDetail
+      saved: mcp/view-com-au-mcp-tools.json
+    toolsCall:
+      status: 200
+      tool: propertySearch
+      arguments: 'locations: [{state: vic, suburbName: Fitzroy, suburbNameSlug:
+        fitzroy, postcode: 3065}], saleMethod: [Sale], sortBy: recommended'
+      result: '"Found 10 properties matching your criteria." with full listing
+        objects — propertyId, unit/street/suburb/state/postcode, lat-long, display
+        price, beds/baths/car spaces, property type, hero image URL, listing
+        status, detail page URL, agency (id, name, logo, brand colour, profile
+        link) and agents.'
+      note: Response body not committed to the repo — it is live third-party
+        listing content, not a contract. Only the tool contracts are stored.
+    resourcesAndPrompts:
+      resourcesList: -32601 Method not found
+      promptsList: -32601 Method not found
+      note: Tools only. No MCP resources or prompts layer.
+    documentation: >-
+      No human-readable documentation page for the MCP server was found. GET on
+      /, /sse, /docs, /health, /openapi.json, /robots.txt and
+      /.well-known/mcp.json at mcp.view.com.au all return 404; GET /mcp returns
+      405 with a JSON-RPC "Method not allowed." The server was discovered by
+      certificate-transparency subdomain enumeration (crt.sh), not by
+      documentation.
+  productFamilyFromToolContracts:
+    note: The segmentation below is taken verbatim from the harvested MCP tool
+      schemas — it is View's own vocabulary, not an API Evangelist
+      interpretation.
+    onMarketListings: propertySearch / propertyDetail — sale, auction, lease and
+      sold; state/city/suburb/postcode/street/LGA/school and lat-long radius;
+      property types House, Apartment & Unit, Studio, Townhouse, Land, Villa,
+      Rural; inspection times, floor plans, Statement of Information (SOI).
+    offMarketPropertyRecords: offMarketPropertyDetail — off-market properties by
+      SEO slug, with price estimates, property history, nearby schools and
+      zoning.
+    planningAndZoning: zoning code, description, Local Government Area, and
+      planning overlays for environment, infrastructure, industry, bushfire, flood
+      and heritage; the tool schema names Archistar alongside nearby-school data.
+    property360: an includeP360Properties flag on propertySearch, View's
+      off-market "Property 360" inventory folded into on-market search results.
+    agentsAndAgencies: agency and agent objects returned inline on every listing;
+      a public agency sitemap (sitemap-agencies.xml) exists.
+    notPresent: no valuation/AVM product API, no title, no escrow or conveyancing,
+      no property management or tenancy, no payments, no commercial real estate
+      surface is exposed through the reachable machine surface.
+  corporateIdentity:
+    operator: View Media Group Pty Ltd (ACN 619 657 680)
+    portalEntity: view.com.au Pty Ltd (ACN 088 369 395)
+    relatedEntities: AD Group (Australia) Pty Ltd (ACN 601 035 125), The Today
+      Business Pty Ltd (ACN 627 299 889)
+    jurisdiction: Victoria, Australia
+    founded: 'View Media Group states the business was started in August 2022'
+    selfDescription: >-
+      "View Media Group (VMG) is a real estate digital media & technology services
+      business comprising a suite of proptech assets that compete in Australia's
+      $300b real estate transactional market. The business was started in August
+      2022." — verbatim meta description, https://www.viewmediagroup.com.au/
+    lineage: >-
+      realestateview.com.au now returns HTTP 410 Gone, and the company's GitHub
+      organization is still named "realestateview" with display name
+      "view.com.au" — consistent evidence that View.com.au is the rebranded
+      RealEstateView portal.
+    siblingBrands: ruralview.com.au, businessesview.com.au and holidayview.com.au
+      appear on the same certificate transparency records; all three returned HTTP
+      503 on 2026-07-26, so no claim is made about their current operation.
+
+sources:
+- url: https://mcp.view.com.au/mcp
+  type: MCPServer
+  status: 200
+  date: '2026-07-26'
+  note: Live, unauthenticated. initialize + tools/list + tools/call all succeeded.
+- url: https://view.com.au/robots.txt
+  type: Robots
+  status: 200
+  date: '2026-07-26'
+  note: Discloses /api/pubui/*, /portal/*, /json/* and /authenticated/* as
+    disallowed internal paths; lists the sitemap index.
+- url: https://view.com.au/sitemap.xml
+  type: Sitemap
+  status: 200
+  date: '2026-07-26'
+  note: Twelve top-level sections — for-sale, for-rent, sold-properties, property,
+    find-agent, sales-and-auction-results/victoria, home-loans, advice, news,
+    mobile, location. No developer or API section exists.
+- url: https://api.view.com.au/v1
+  type: APIHost
+  status: 403
+  date: '2026-07-26'
+  note: 'AWS API Gateway; x-amzn-errortype: MissingAuthenticationTokenException.'
+- url: https://sandbox.api.view.com.au/
+  type: APIHost
+  status: 403
+  date: '2026-07-26'
+  note: Sandbox API host exists; no public onboarding.
+- url: https://www.viewmediagroup.com.au/
+  type: Website
+  status: 200
+  date: '2026-07-26'
+  note: Redirects 301 to https://vmg.com.au/. React SPA; corporate identity, ACNs
+    and self-description extracted from served HTML meta and bundle.
+- url: https://realestateview.com.au/
+  type: Website
+  status: 410
+  date: '2026-07-26'
+  note: Legacy brand domain, Gone.
+- url: https://github.com/realestateview
+  type: GitHubOrganization
+  status: 200
+  date: '2026-07-26'
+  note: Exists, 0 public repositories.
+- url: https://www.reso.org/certificates/
+  type: Certification
+  status: 200
+  date: '2026-07-26'
+  note: No Australian organization listed.
+- url: https://crt.sh/?q=%25.view.com.au&output=json
+  type: CertificateTransparency
+  status: 200
+  date: '2026-07-26'
+  note: 81 distinct names; how mcp.view.com.au, sandbox.api.view.com.au and
+    api-gateway.view.com.au were discovered.
+
+probes:
+- {url: 'https://view.com.au/', status: 403}
+- {url: 'https://www.view.com.au/', status: 403}
+- {url: 'https://developer.view.com.au/', status: 0, note: does not resolve}
+- {url: 'https://developers.view.com.au/', status: 0, note: does not resolve}
+- {url: 'https://docs.view.com.au/', status: 0, note: does not resolve}
+- {url: 'https://help.view.com.au/', status: 0, note: does not resolve}
+- {url: 'https://support.view.com.au/', status: 0, note: does not resolve}
+- {url: 'https://about.view.com.au/', status: 0, note: does not resolve}
+- {url: 'https://view.com.au/developers', status: 403}
+- {url: 'https://view.com.au/api', status: 403}
+- {url: 'https://view.com.au/docs', status: 403}
+- {url: 'https://view.com.au/api-docs', status: 403}
+- {url: 'https://view.com.au/openapi.json', status: 403}
+- {url: 'https://view.com.au/swagger.json', status: 403}
+- {url: 'https://view.com.au/$metadata', status: 403}
+- {url: 'https://view.com.au/.well-known/openid-configuration', status: 403}
+- {url: 'https://view.com.au/.well-known/security.txt', status: 403}
+- {url: 'https://view.com.au/llms.txt', status: 403}
+- {url: 'https://view.com.au/mcp', status: 403}
+- {url: 'https://view.com.au/robots.txt', status: 200}
+- {url: 'https://view.com.au/ads.txt', status: 200}
+- {url: 'https://view.com.au/sitemap.xml', status: 200}
+- {url: 'https://api.view.com.au/openapi.json', status: 403}
+- {url: 'https://api.view.com.au/swagger.json', status: 403}
+- {url: 'https://api.view.com.au/docs', status: 403}
+- {url: 'https://sandbox.api.view.com.au/openapi.json', status: 403}
+- {url: 'https://mcp.view.com.au/', status: 404}
+- {url: 'https://mcp.view.com.au/sse', status: 404}
+- {url: 'https://mcp.view.com.au/mcp', status: 200, note: 'POST JSON-RPC; GET returns 405'}
+- {url: 'https://mcp.view.com.au/.well-known/oauth-authorization-server', status: 404}
+- {url: 'https://mcp.view.com.au/.well-known/oauth-protected-resource', status: 404}
+
+actions:
+  apisListed: 1
+  openapiHarvested: false
+  specsHarvested: 0
+  mcpArtifactsHarvested: 2
+  artifacts:
+  - mcp/view-com-au-mcp-tools.json
+  - mcp/view-com-au-mcp-initialize.json
+  reason: >-
+    No OpenAPI, Swagger, AsyncAPI or OData $metadata document exists anywhere on
+    a reachable View.com.au host, so openapi/ was not created. The two MCP
+    documents are the only machine-readable contracts View.com.au publishes, and
+    both were harvested verbatim from live anonymous JSON-RPC responses. No spec
+    was generated, inferred or reconstructed.
