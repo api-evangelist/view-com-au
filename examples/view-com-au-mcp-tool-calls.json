@@ -1,0 +1,166 @@
+{
+  "generated": "2026-07-26",
+  "method": "probed",
+  "source": "https://mcp.view.com.au/mcp",
+  "notes": "Every request below was executed anonymously against the live server on 2026-07-26 and the recorded outcome is what actually happened. Response bodies are NOT stored: the payloads are proprietary third-party listing, agency and agent records. Only request shapes, status and the error strings the server itself emits are kept.",
+  "transport": {
+    "method": "POST",
+    "url": "https://mcp.view.com.au/mcp",
+    "headers": {
+      "Content-Type": "application/json",
+      "Accept": "application/json, text/event-stream"
+    },
+    "auth": "none"
+  },
+  "examples": [
+    {
+      "name": "initialize",
+      "tool": null,
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+          "protocolVersion": "2024-11-05",
+          "capabilities": {},
+          "clientInfo": { "name": "api-evangelist", "version": "1.0.0" }
+        }
+      },
+      "outcome": {
+        "http_status": 200,
+        "result": "protocolVersion 2024-11-05, capabilities.tools.listChanged true, serverInfo view-com-au-mcp-server 1.0.0",
+        "saved": "mcp/view-com-au-mcp-initialize.json"
+      }
+    },
+    {
+      "name": "list tools",
+      "tool": null,
+      "request": { "jsonrpc": "2.0", "id": 2, "method": "tools/list" },
+      "outcome": {
+        "http_status": 200,
+        "result": "3 tools: propertySearch, propertyDetail, offMarketPropertyDetail",
+        "saved": "mcp/view-com-au-mcp-tools.json"
+      }
+    },
+    {
+      "name": "search a suburb for sale",
+      "tool": "propertySearch",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 20,
+        "method": "tools/call",
+        "params": {
+          "name": "propertySearch",
+          "arguments": {
+            "locations": [
+              {
+                "state": "vic",
+                "suburbName": "Fitzroy",
+                "suburbNameSlug": "fitzroy",
+                "postcode": "3065"
+              }
+            ],
+            "page": 1,
+            "sortBy": "recommended",
+            "saleMethod": ["Sale"],
+            "includeP360Properties": false,
+            "includeSurrounding": false,
+            "excludeUnderContract": false
+          }
+        }
+      },
+      "outcome": {
+        "http_status": 200,
+        "isError": false,
+        "result": "structuredContent.text \"Found 10 properties matching your criteria.\" plus a listings[] array of 10 on-market records"
+      },
+      "note": "suburbName requires both suburbNameSlug and postcode. All six of page, sortBy, saleMethod, includeP360Properties, includeSurrounding and excludeUnderContract are required by the input schema."
+    },
+    {
+      "name": "search a radius around a point",
+      "tool": "propertySearch",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 30,
+        "method": "tools/call",
+        "params": {
+          "name": "propertySearch",
+          "arguments": {
+            "locations": [{ "state": "nsw" }],
+            "coordinates": { "latitude": -33.8915, "longitude": 151.2767, "radius": 3 },
+            "propertyTypes": ["House", "Townhouse"],
+            "priceTo": 2500000,
+            "bedrooms": 3,
+            "page": 1,
+            "sortBy": "price-asc",
+            "saleMethod": ["Sale", "Auction"],
+            "includeP360Properties": false,
+            "includeSurrounding": true,
+            "excludeUnderContract": true
+          }
+        }
+      },
+      "outcome": {
+        "http_status": null,
+        "note": "Shape derived from the published inputSchema; not executed, to conserve the anonymous 100-request/300-second quota. state is required on every locations[] entry even when coordinates are supplied. radius is required inside coordinates and is capped at 50 km."
+      }
+    },
+    {
+      "name": "get a listing by id",
+      "tool": "propertyDetail",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 21,
+        "method": "tools/call",
+        "params": { "name": "propertyDetail", "arguments": { "listingId": 18071535 } }
+      },
+      "outcome": {
+        "http_status": 200,
+        "isError": false,
+        "result": "full listing object including address, price, description, inspections[], images[], floorPlans[], statementOfInfo[], agency and agents[]"
+      },
+      "note": "listingId is the propertyId returned by propertySearch, as an integer."
+    },
+    {
+      "name": "unknown tool",
+      "tool": "noSuchTool",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "method": "tools/call",
+        "params": { "name": "noSuchTool", "arguments": {} }
+      },
+      "outcome": {
+        "http_status": 200,
+        "isError": true,
+        "message": "Unknown tool: noSuchTool"
+      }
+    },
+    {
+      "name": "wrong argument type",
+      "tool": "propertyDetail",
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "method": "tools/call",
+        "params": { "name": "propertyDetail", "arguments": { "listingId": "abc" } }
+      },
+      "outcome": {
+        "http_status": 200,
+        "jsonrpc_error_code": -32603,
+        "message": "[{\"expected\":\"number\",\"code\":\"invalid_type\",\"path\":[\"listingId\"],\"message\":\"Invalid input: expected number, received string\"}]"
+      }
+    },
+    {
+      "name": "unimplemented method",
+      "tool": null,
+      "request": { "jsonrpc": "2.0", "id": 9, "method": "resources/list" },
+      "outcome": {
+        "http_status": 200,
+        "jsonrpc_error_code": -32601,
+        "message": "Method not found"
+      },
+      "note": "The server implements no resources and no prompts layer. prompts/list behaves identically."
+    }
+  ]
+}

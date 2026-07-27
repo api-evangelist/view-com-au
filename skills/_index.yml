@@ -1,0 +1,37 @@
+generated: '2026-07-26'
+method: generated
+source: mcp/view-com-au-mcp-tools.json
+notes: >-
+  View.com.au publishes no OpenAPI, so these skills are grounded in the three
+  real MCP tool contracts harvested verbatim from the live server rather than in
+  operationIds. No provider-published skills or AGENTS.md exist — every
+  /.well-known/ and docs probe missed.
+
+skills:
+- file: view-com-au-property-search.md
+  name: Search Australian property listings on View.com.au
+  api: mcp/view-com-au-mcp.yml
+  surface: https://mcp.view.com.au/mcp
+  operations: [propertySearch]
+  summary: >-
+    Search on-market listings by suburb, city, LGA, school catchment, street or
+    lat-long radius, with the slug-pairing rules, required-flag traps,
+    pagination limits and quota handling that trip up first calls.
+- file: view-com-au-listing-detail.md
+  name: Retrieve a full View.com.au listing
+  api: mcp/view-com-au-mcp.yml
+  surface: https://mcp.view.com.au/mcp
+  operations: [propertySearch, propertyDetail]
+  summary: >-
+    Fetch the complete on-market record by numeric listing id — inspections,
+    floor plans, Statement of Information, zoning, agency and agents — and
+    handle the agency/agent lookup gap and the not-found-equals-outage ambiguity.
+- file: view-com-au-off-market-lookup.md
+  name: Look up an off-market property on View.com.au
+  api: mcp/view-com-au-mcp.yml
+  surface: https://mcp.view.com.au/mcp
+  operations: [propertySearch, offMarketPropertyDetail]
+  summary: >-
+    Read Property 360 off-market records by SEO slug, including price estimates
+    and planning overlays, with the slug-enumeration constraint and the consent
+    and responsible-use rules that apply to unlisted properties.

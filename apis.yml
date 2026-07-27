@@ -62,18 +62,78 @@ apis:
   - Australia
   properties:
   - type: MCPServer
+    name: View.com.au MCP server manifest
+    url: mcp/view-com-au-mcp.yml
+  - type: MCPServer
+    name: tools/list, harvested verbatim
     url: mcp/view-com-au-mcp-tools.json
   - type: MCPServer
+    name: initialize, harvested verbatim
     url: mcp/view-com-au-mcp-initialize.json
+  - type: RateLimits
+    url: rate-limits/view-com-au-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/view-com-au-error-codes.yml
+  - type: Conventions
+    url: conventions/view-com-au-conventions.yml
+  - type: DataModel
+    url: data-model/view-com-au-data-model.yml
+  - type: Examples
+    url: examples/view-com-au-mcp-tool-calls.json
+  - type: AgenticAccess
+    url: agentic-access/view-com-au-agentic-access.yml
+  - type: Authentication
+    url: authentication/view-com-au-authentication.yml
   - type: Website
     url: https://view.com.au/
 common:
+- type: Authentication
+  url: authentication/view-com-au-authentication.yml
+- type: Conformance
+  url: conformance/view-com-au-conformance.yml
+- type: Lifecycle
+  url: lifecycle/view-com-au-lifecycle.yml
+- type: LLMsTxt
+  url: llms/view-com-au-llms.txt
+- type: AgentSkill
+  name: Agent skills index
+  url: skills/_index.yml
+- type: AgentSkill
+  name: Search Australian property listings on View.com.au
+  url: skills/view-com-au-property-search.md
+- type: AgentSkill
+  name: Retrieve a full View.com.au listing
+  url: skills/view-com-au-listing-detail.md
+- type: AgentSkill
+  name: Look up an off-market property on View.com.au
+  url: skills/view-com-au-off-market-lookup.md
+- type: DomainSecurity
+  url: security/view-com-au-domain-security.yml
 - type: Website
   url: https://view.com.au/
 - type: Website
   url: https://www.viewmediagroup.com.au/
+- type: About
+  url: https://view.com.au/who-we-are/
 - type: Blog
   url: https://view.com.au/news/
+- type: Support
+  url: https://view.com.au/contact-us/
+- type: HelpCenter
+  url: https://view.com.au/frequently-asked-questions/
+- type: SignUp
+  url: https://view.com.au/agency-hub/signup/
+- type: TermsOfService
+  url: https://view.com.au/terms-of-use/
+- type: TermsOfService
+  name: Customer terms and conditions
+  url: https://view.com.au/customer-terms-conditions/
+- type: PrivacyPolicy
+  url: https://view.com.au/privacy-policy/
+- type: Sitemap
+  url: https://view.com.au/sitemap.xml
+- type: Robots
+  url: https://view.com.au/robots.txt
 - type: GitHubOrganization
   url: https://github.com/realestateview
 maintainers:

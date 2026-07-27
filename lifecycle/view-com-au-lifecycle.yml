@@ -1,0 +1,60 @@
+generated: '2026-07-26'
+method: probed
+source: live probes of mcp.view.com.au and view.com.au on 2026-07-26
+notes: >-
+  No versioning policy, deprecation policy, SLA, status page or changelog is
+  published for any View.com.au surface. The entries below record what the
+  server itself reveals and what was searched for and not found. No StatusPage
+  or Deprecation pointer is emitted, because neither exists.
+
+versioning:
+  scheme: none
+  detail: >-
+    The only version signals are implicit: the MCP protocol revision
+    "2024-11-05" returned by initialize, and serverInfo.version "1.0.0". There
+    is no URI version segment, no version header, no date pinning, and no
+    documented way to request prior behaviour. A tool contract can change under
+    a caller with no notice; capabilities.tools.listChanged is advertised as
+    true, so the server reserves the right to change the tool set at runtime.
+  current:
+    mcp_protocol_version: '2024-11-05'
+    server_version: 1.0.0
+  docs: null
+
+deprecation:
+  policy_url: null
+  policy: none published
+  sunset_header: false
+  deprecation_header: false
+  deprecated_operations: []
+  note: >-
+    The company has already retired one brand domain without any API-facing
+    process — realestateview.com.au now returns HTTP 410 Gone — which is the
+    only observable precedent for how a View surface disappears.
+
+sla:
+  url: null
+  uptime_target: null
+  support_commitment: none for the API surface
+
+status_page:
+  url: null
+  probes:
+  - {url: 'https://status.view.com.au/', status: 0, note: does not resolve}
+  - {url: 'https://mcp.view.com.au/health', status: 404}
+
+changelog:
+  url: null
+  note: no dated changelog or release notes exist for the MCP server or any API host
+
+maturity:
+  stage: production (live and serving real listing data)
+  stability: unversioned and undocumented — treat as subject to change without notice
+  agent_guidance: >-
+    Re-run tools/list at the start of every session rather than caching tool
+    contracts, and pin nothing. The absence of a status page means an agent has
+    no out-of-band way to distinguish an outage from a block.
+
+surface_history:
+- {date: '2026-07-26', event: 'MCP server verified live and anonymous — initialize, tools/list and tools/call all 200'}
+- {date: '2026-07-26', event: 'legacy realestateview.com.au observed returning HTTP 410 Gone'}

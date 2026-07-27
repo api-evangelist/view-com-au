@@ -1,0 +1,67 @@
+# View.com.au
+
+> Australian residential property portal operated by View Media Group Pty Ltd. View publishes no developer portal, no OpenAPI and no API program, and its web pages return HTTP 403 to every non-browser client behind DataDome bot protection — yet it runs a completely public, unauthenticated Model Context Protocol server at https://mcp.view.com.au/mcp that returns live on-market listings, agency and agent records, and off-market property data to any anonymous agent. The human web is closed to machines; the agent surface is wide open.
+
+<!--
+generated: 2026-07-26
+method: generated
+source: apis.yml + repo artifacts; no /llms.txt is published by the provider
+  (https://view.com.au/llms.txt returns HTTP 403 DataDome, https://mcp.view.com.au/llms.txt returns 404)
+-->
+
+## How to call it
+
+- POST JSON-RPC 2.0 to https://mcp.view.com.au/mcp
+- Headers: `Content-Type: application/json` and `Accept: application/json, text/event-stream`
+- No API key, no OAuth, no account, no agreement. Send no credentials — there are none to send.
+- Rate limit: 100 requests per 300 seconds, signalled with `ratelimit-policy: 100;w=300`.
+- Responses are `text/event-stream`; read `result.structuredContent`, not the prose `text`.
+- A failed lookup returns HTTP 200 with `result.isError: true` — check `isError`, not just `error`.
+
+## Tools
+
+- [propertySearch](https://mcp.view.com.au/mcp): Search on-market listings by state/city/suburb/postcode/street/LGA/school or lat-long radius, filtered by property type, price, beds, baths, car spaces, land size, features and sale method (Sale/Auction/Lease/Sold). Paged via `page`; sorted via `sortBy`.
+- [propertyDetail](https://mcp.view.com.au/mcp): Full listing by numeric `listingId` — address, price, description, inspection times, floor plans, Statement of Information, images, agency, agents and zoning with planning overlays.
+- [offMarketPropertyDetail](https://mcp.view.com.au/mcp): Off-market ("Property 360") property by SEO slug — price estimates, zoning and planning overlays, property history, nearby schools and images.
+
+## Contracts
+
+- [MCP server manifest](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/mcp/view-com-au-mcp.yml)
+- [tools/list, verbatim](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/mcp/view-com-au-mcp-tools.json): the three tool contracts with full JSON Schema 2020-12 input schemas.
+- [initialize, verbatim](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/mcp/view-com-au-mcp-initialize.json)
+- [Example tool calls](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/examples/view-com-au-mcp-tool-calls.json)
+
+## Operating rules
+
+- [Conventions](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/conventions/view-com-au-conventions.yml): pagination, slug pairing rules, filters, response shape, caching, versioning.
+- [Error codes](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/errors/view-com-au-error-codes.yml): JSON-RPC codes and MCP tool-level errors, observed live.
+- [Rate limits](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/rate-limits/view-com-au-rate-limits.yml)
+- [Authentication](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/authentication/view-com-au-authentication.yml)
+- [Data model](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/data-model/view-com-au-data-model.yml)
+- [Agentic access](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/agentic-access/view-com-au-agentic-access.yml)
+- [Lifecycle](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/lifecycle/view-com-au-lifecycle.yml): unversioned, no deprecation policy, no status page.
+- [Conformance](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/conformance/view-com-au-conformance.yml)
+
+## Agent skills
+
+- [Search Australian property listings](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/skills/view-com-au-property-search.md)
+- [Retrieve a full listing](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/skills/view-com-au-listing-detail.md)
+- [Look up an off-market property](https://raw.githubusercontent.com/api-evangelist/view-com-au/refs/heads/main/skills/view-com-au-off-market-lookup.md)
+
+## Human pages
+
+- [View.com.au](https://view.com.au/)
+- [Who we are](https://view.com.au/who-we-are/)
+- [News](https://view.com.au/news/)
+- [Frequently asked questions](https://view.com.au/frequently-asked-questions/)
+- [Contact us](https://view.com.au/contact-us/)
+- [Agency sign-up](https://view.com.au/agency-hub/signup/)
+- [Terms of use](https://view.com.au/terms-of-use/)
+- [Privacy policy](https://view.com.au/privacy-policy/)
+- [View Media Group](https://vmg.com.au/)
+
+## Optional
+
+- Every page under view.com.au returns HTTP 403 to non-browser clients (DataDome). The links above are real published pages, verified through search-engine indexing of their own titles, but they cannot be fetched programmatically.
+- https://api.view.com.au and https://sandbox.api.view.com.au are real AWS API Gateway hosts that reject unauthenticated callers with `MissingAuthenticationTokenException`. They are undocumented and there is no public path to credentials.
+- The data returned by the MCP server is free to call but is not open data — listings, agency, agent and off-market records are proprietary portal content.

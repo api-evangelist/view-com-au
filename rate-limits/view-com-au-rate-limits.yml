@@ -1,0 +1,44 @@
+generated: '2026-07-26'
+method: probed
+source: https://mcp.view.com.au/mcp
+notes: >-
+  View.com.au publishes no rate-limit documentation. Everything below was read
+  off live response headers from anonymous JSON-RPC calls to the MCP server on
+  2026-07-26. The server emits IETF draft RateLimit header fields
+  (ratelimit-policy / ratelimit-limit / ratelimit-remaining / ratelimit-reset),
+  which makes the quota machine-readable to an agent without any documentation.
+
+signalling:
+  style: ietf-ratelimit-headers
+  headers:
+  - name: ratelimit-policy
+    example: 100;w=300
+    meaning: 100 requests per 300 second window.
+  - name: ratelimit-limit
+    example: '100'
+    meaning: Quota ceiling for the current window.
+  - name: ratelimit-remaining
+    example: '77'
+    meaning: Requests left in the current window.
+  - name: ratelimit-reset
+    example: '26'
+    meaning: Seconds until the window resets.
+  retry_after: not observed
+  429_body: not observed (limit not exhausted during probing)
+
+rate_limits:
+- api: view-com-au-property-mcp-server
+  endpoint: https://mcp.view.com.au/mcp
+  scope: per-client (unauthenticated; keyed by caller IP, inferred — no credential exists)
+  limit_count: 100
+  window: 300
+  window_unit: seconds
+  applies_to: all JSON-RPC methods (initialize, tools/list, tools/call)
+  tier: anonymous
+  documented: false
+  observed: true
+  observed_date: '2026-07-26'
+
+plans: none published
+burst: not documented
+quota_increase_path: none — no account, no contact channel for the MCP surface

@@ -1,0 +1,68 @@
+generated: '2026-07-26'
+method: probed
+source: live probes of mcp.view.com.au, api.view.com.au, sandbox.api.view.com.au and view.com.au
+notes: >-
+  There is no OpenAPI to derive security schemes from, and no published
+  authentication documentation of any kind. This profile is assembled from live
+  anonymous probes on 2026-07-26. The result is a split posture: the reachable
+  agent surface has no authentication at all, while every other API host
+  rejects unauthenticated callers with no published way to obtain credentials.
+
+summary:
+  types: [none]
+  api_key_in: []
+  oauth2_flows: []
+  public_surface: unauthenticated
+  gated_surfaces: 2
+  scopes_artifact: null    # no OAuth, so scopes/ is intentionally absent
+
+schemes:
+- name: none
+  type: none
+  surface: https://mcp.view.com.au/mcp
+  applies_to: view-com-au-property-mcp-server
+  description: >-
+    The MCP server accepts anonymous JSON-RPC with no Authorization header, no
+    API key, no session, no account and no agreement. initialize, tools/list
+    and tools/call all succeed for any caller. Verified 2026-07-26.
+  evidence:
+  - {probe: 'POST https://mcp.view.com.au/mcp tools/list', status: 200}
+  - {probe: 'POST https://mcp.view.com.au/mcp tools/call propertySearch', status: 200}
+
+gated_surfaces:
+- host: https://api.view.com.au
+  mechanism: AWS API Gateway native authorization (IAM / custom authorizer / usage-plan key — indeterminate from outside)
+  challenge: 'HTTP 403 with x-amzn-errortype: MissingAuthenticationTokenException'
+  documented: false
+  onboarding_path: none published
+  evidence:
+  - {probe: 'https://api.view.com.au/v1', status: 403}
+  - {probe: 'https://api.view.com.au/openapi.json', status: 403}
+- host: https://sandbox.api.view.com.au
+  mechanism: same AWS API Gateway posture as production
+  challenge: HTTP 403 application/json
+  documented: false
+  onboarding_path: none published
+  evidence:
+  - {probe: 'https://sandbox.api.view.com.au/openapi.json', status: 403}
+
+discovery_probes:
+- {url: 'https://mcp.view.com.au/.well-known/oauth-authorization-server', status: 404}
+- {url: 'https://mcp.view.com.au/.well-known/oauth-protected-resource', status: 404}
+- {url: 'https://mcp.view.com.au/.well-known/openid-configuration', status: 404}
+- {url: 'https://view.com.au/.well-known/openid-configuration', status: 403, note: DataDome challenge, not an OIDC document}
+- {url: 'https://api.view.com.au/.well-known/openid-configuration', status: 403}
+
+end_user_auth:
+  note: >-
+    The consumer website offers account sign-up via Google, Apple or one-time
+    password, and agencies sign up through the agency hub. Neither is an API
+    credential — no developer can convert either into machine access.
+  sign_up: https://view.com.au/agency-hub/signup/
+
+agent_guidance: >-
+  Send no credentials. Adding an Authorization header is unnecessary and there
+  is no credential to add. The absence of authentication also means the absence
+  of identity: an agent cannot be attributed, cannot request a quota increase,
+  and cannot appeal a block. Budget against the 100-request / 300-second
+  anonymous rate limit in rate-limits/view-com-au-rate-limits.yml.

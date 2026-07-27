@@ -1,0 +1,86 @@
+generated: '2026-07-26'
+method: probed
+source: https://mcp.view.com.au/mcp
+format: json-rpc-2.0
+notes: >-
+  Not RFC 9457. View.com.au's only reachable machine surface is an MCP server,
+  so errors arrive in two distinct shapes: JSON-RPC 2.0 protocol errors (an
+  `error` object with a numeric `code`) and MCP tool-level errors (a normal
+  `result` carrying `isError: true` and a human-readable message). Every entry
+  below was produced by a real anonymous probe on 2026-07-26 and the messages
+  are quoted verbatim. No error reference page is published anywhere.
+
+envelopes:
+- kind: jsonrpc-protocol-error
+  shape: '{"jsonrpc":"2.0","id":<id>,"error":{"code":<int>,"message":"<string>"}}'
+  http_status: 200
+  note: 'Transport is 200 with an SSE "event: message" frame; the failure is in the body.'
+- kind: mcp-tool-error
+  shape: '{"result":{"content":[{"type":"text","text":"<message>"}],"isError":true},"jsonrpc":"2.0","id":<id>}'
+  http_status: 200
+  variant: >-
+    Some tools return `"content": []` with the message under
+    `structuredContent.text` instead of a text content block.
+  note: >-
+    Tool-level errors are NOT JSON-RPC errors. An agent that only inspects
+    `error` will read a failed lookup as a success — `isError` must be checked.
+
+errors:
+- code: -32601
+  kind: jsonrpc-protocol-error
+  message: Method not found
+  meaning: The JSON-RPC method is not implemented by this server.
+  observed_on: 'resources/list, prompts/list'
+  action: >-
+    Use only `initialize`, `tools/list` and `tools/call`. The server implements
+    no resources and no prompts layer.
+  probe: '{"jsonrpc":"2.0","id":9,"method":"resources/list"}'
+- code: -32603
+  kind: jsonrpc-protocol-error
+  message: >-
+    A JSON-encoded array of Zod validation issues, e.g.
+    [{"expected":"number","code":"invalid_type","path":["listingId"],
+    "message":"Invalid input: expected number, received string"}]
+  meaning: >-
+    Argument validation failure. The server maps schema violations onto the
+    JSON-RPC "Internal error" code rather than -32602 (Invalid params), and
+    leaks the raw validator output as the message string.
+  observed_on: 'tools/call propertyDetail with listingId as a string'
+  action: >-
+    Parse `error.message` as JSON to get the offending `path` and `expected`
+    type; coerce arguments to the types in the tool inputSchema before calling.
+    Do not retry unchanged.
+  probe: '{"method":"tools/call","params":{"name":"propertyDetail","arguments":{"listingId":"abc"}}}'
+- code: null
+  kind: mcp-tool-error
+  message: 'Unknown tool: <name>'
+  meaning: The requested tool name is not one of the three published tools.
+  observed_on: 'tools/call with name noSuchTool'
+  action: Call tools/list and use an exact tool name.
+- code: null
+  kind: mcp-tool-error
+  message: 'Error getting listing detail: Failed to fetch listing detail from API'
+  meaning: >-
+    The listing id does not resolve — the backing internal API returned nothing.
+    This is the not-found case; the server does not distinguish not-found from
+    upstream failure.
+  observed_on: 'tools/call propertyDetail with listingId 1'
+  action: >-
+    Treat as not-found. Re-run propertySearch to obtain a currently valid
+    propertyId; ids for delisted properties stop resolving.
+- code: null
+  kind: mcp-tool-error
+  message: 'Error getting property detail: Failed to fetch property detail from API'
+  meaning: >-
+    The off-market SEO slug does not resolve. Same conflation of not-found and
+    upstream error as the on-market case.
+  observed_on: 'tools/call offMarketPropertyDetail with an on-market listing slug'
+  action: >-
+    Off-market slugs are not published in any sitemap or listing payload; there
+    is no documented way to enumerate them.
+
+gaps:
+- No error reference documentation exists.
+- Validation failures use -32603 rather than the correct -32602 Invalid params.
+- Not-found and upstream-failure are indistinguishable to the caller.
+- No error identifier, type URI or request id is returned for support correlation.

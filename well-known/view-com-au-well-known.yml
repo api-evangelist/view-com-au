@@ -1,0 +1,67 @@
+generated: '2026-07-26'
+method: probed
+source: live probes on 2026-07-26
+notes: >-
+  Recorded as a negative result. Every /.well-known/ path was probed on all four
+  reachable View.com.au hosts and none returned a document. The MCP host answers
+  404 (nothing published); the web and API hosts answer 403 (DataDome bot
+  protection and AWS API Gateway respectively), so their /.well-known/ space is
+  not merely empty, it is unreachable to any non-browser client — which defeats
+  the purpose of a discovery namespace. No WellKnown or SecurityTxt pointer is
+  wired in apis.yml because no document exists to point at.
+
+documents: []
+
+hosts:
+- host: https://mcp.view.com.au
+  gate: none
+  probes:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/oauth-protected-resource, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/mcp.json, status: 404}
+- host: https://api.view.com.au
+  gate: AWS API Gateway (MissingAuthenticationTokenException)
+  probes:
+  - {path: /.well-known/security.txt, status: 403}
+  - {path: /.well-known/openid-configuration, status: 403}
+  - {path: /.well-known/oauth-authorization-server, status: 403}
+  - {path: /.well-known/oauth-protected-resource, status: 403}
+  - {path: /.well-known/api-catalog, status: 403}
+  - {path: /.well-known/ai-plugin.json, status: 403}
+  - {path: /.well-known/mcp.json, status: 403}
+- host: https://sandbox.api.view.com.au
+  gate: AWS API Gateway
+  probes:
+  - {path: /.well-known/security.txt, status: 403}
+  - {path: /.well-known/openid-configuration, status: 403}
+  - {path: /.well-known/oauth-authorization-server, status: 403}
+  - {path: /.well-known/oauth-protected-resource, status: 403}
+  - {path: /.well-known/api-catalog, status: 403}
+  - {path: /.well-known/ai-plugin.json, status: 403}
+  - {path: /.well-known/mcp.json, status: 403}
+- host: https://view.com.au
+  gate: DataDome bot protection
+  probes:
+  - {path: /.well-known/security.txt, status: 403}
+  - {path: /.well-known/openid-configuration, status: 403}
+  - {path: /.well-known/oauth-authorization-server, status: 403}
+  - {path: /.well-known/oauth-protected-resource, status: 403}
+  - {path: /.well-known/api-catalog, status: 403}
+  - {path: /.well-known/ai-plugin.json, status: 307, note: 'redirects to /location/, which then returns 403 — a SPA catch-all, not a plugin manifest'}
+  - {path: /.well-known/mcp.json, status: 307, note: same SPA catch-all redirect}
+
+other_root_documents:
+- {url: 'https://view.com.au/robots.txt', status: 200}
+- {url: 'https://view.com.au/ads.txt', status: 200}
+- {url: 'https://view.com.au/sitemap.xml', status: 200}
+- {url: 'https://view.com.au/sitemap-agencies.xml', status: 200}
+- {url: 'https://view.com.au/llms.txt', status: 403, note: 'DataDome challenge — no llms.txt is served'}
+
+corporate_host_note: >-
+  https://vmg.com.au/ returns HTTP 200 for every path including
+  /.well-known/security.txt, but the body is the React SPA shell — a catch-all,
+  not a real document. Nothing is recorded from it.

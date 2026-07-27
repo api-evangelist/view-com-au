@@ -1,0 +1,102 @@
+generated: '2026-07-26'
+method: derived
+source: >-
+  mcp/view-com-au-mcp-tools.json, mcp/view-com-au-mcp-initialize.json, live
+  header and DNS probes on 2026-07-26, review.yml
+notes: >-
+  View.com.au makes no conformance or compliance claim anywhere on a reachable
+  page. Every assertion below is derived from observed protocol behaviour, not
+  from a vendor statement. No certification of any kind was found, so no
+  Compliance pointer is emitted.
+
+standards:
+- id: mcp-2024-11-05
+  name: Model Context Protocol, revision 2024-11-05
+  conforms: true
+  evidence: 'initialize returned protocolVersion "2024-11-05" with capabilities.tools.listChanged; tools/list and tools/call behave per spec'
+- id: mcp-streamable-http
+  name: MCP streamable HTTP transport
+  conforms: true
+  evidence: 'POST /mcp returns text/event-stream framed responses; GET /mcp returns 405 with a JSON-RPC body'
+- id: jsonrpc-2.0
+  name: JSON-RPC 2.0
+  conforms: partial
+  evidence: >-
+    Correct request/response envelope and -32601 Method not found, but argument
+    validation failures are returned as -32603 (Internal error) instead of
+    -32602 (Invalid params).
+- id: json-schema-2020-12
+  name: JSON Schema draft 2020-12
+  conforms: true
+  evidence: 'every tool inputSchema declares $schema https://json-schema.org/draft/2020-12/schema with typed properties, enums, minimum/maximum and additionalProperties:false'
+- id: ietf-ratelimit-headers
+  name: IETF RateLimit header fields (draft)
+  conforms: true
+  evidence: 'responses carry ratelimit-policy: 100;w=300 plus ratelimit-limit, ratelimit-remaining and ratelimit-reset'
+- id: robots-exclusion
+  name: Robots Exclusion Protocol (RFC 9309)
+  conforms: true
+  evidence: 'https://view.com.au/robots.txt returns 200 with per-agent groups and 60+ Sitemap directives'
+- id: sitemaps-0.9
+  name: sitemaps.org XML sitemap protocol 0.9
+  conforms: true
+  evidence: 'https://view.com.au/sitemap.xml returns a valid urlset with the image extension namespace'
+- id: openapi
+  name: OpenAPI
+  conforms: false
+  evidence: 'no OpenAPI/Swagger document on any reachable host — /openapi.json, /swagger.json and /docs return 403 (DataDome or API Gateway) on view.com.au, api.view.com.au and sandbox.api.view.com.au, and 404 on mcp.view.com.au'
+- id: asyncapi
+  name: AsyncAPI
+  conforms: false
+  evidence: no event, streaming or webhook surface is published
+- id: rfc9457-problem-details
+  name: RFC 9457 Problem Details
+  conforms: false
+  evidence: 'errors are JSON-RPC error objects and MCP isError results; no application/problem+json'
+- id: oauth2
+  name: OAuth 2.0
+  conforms: false
+  evidence: 'no OAuth on the MCP surface; /.well-known/oauth-authorization-server and /.well-known/oauth-protected-resource both 404'
+- id: oidc
+  name: OpenID Connect Discovery
+  conforms: false
+  evidence: '/.well-known/openid-configuration returns 404 on mcp host and a DataDome 403 on the primary domain'
+- id: rfc9116-security-txt
+  name: security.txt
+  conforms: false
+  evidence: 'no /.well-known/security.txt on any host (404 on mcp.view.com.au, 403 elsewhere)'
+- id: rfc8594-sunset-header
+  name: Sunset HTTP header
+  conforms: false
+  evidence: no deprecation or sunset signalling of any kind
+- id: reso-web-api
+  name: RESO Web API
+  conforms: false
+  evidence: >-
+    RESO is a US National Association of REALTORS construct; the RESO
+    certified-organizations directory lists no Australian organization. Verified
+    2026-07-26 against https://www.reso.org/certificates/.
+- id: reso-data-dictionary
+  name: RESO Data Dictionary
+  conforms: false
+  evidence: 'no RESO field names or resources appear in the tool schemas; View uses its own vocabulary (propertyId, saleMethod, P360)'
+- id: odata-4.0
+  name: OData 4.0
+  conforms: false
+  evidence: 'https://view.com.au/$metadata returns a DataDome 403, not a service document'
+- id: hsts
+  name: HTTP Strict Transport Security
+  conforms: partial
+  evidence: 'HSTS present on www.viewmediagroup.com.au (max-age 31536000) but absent on view.com.au and mcp.view.com.au — see security/view-com-au-domain-security.yml'
+- id: dnssec
+  name: DNSSEC
+  conforms: false
+  evidence: not signed for view.com.au or viewmediagroup.com.au
+- id: dmarc
+  name: DMARC
+  conforms: partial
+  evidence: 'record published for both domains but policy is p=none (monitor only)'
+
+certifications: []
+compliance_program: none published
+audit_reports: none published

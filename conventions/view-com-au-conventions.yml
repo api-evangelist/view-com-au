@@ -1,0 +1,133 @@
+generated: '2026-07-26'
+method: derived
+source: mcp/view-com-au-mcp-tools.json + live probes of https://mcp.view.com.au/mcp
+notes: >-
+  View.com.au publishes no conventions documentation. Everything here is derived
+  from the verbatim MCP tool contracts and from live anonymous calls made on
+  2026-07-26. Where a convention is absent, that absence is recorded rather than
+  guessed at.
+
+transport:
+  protocol: JSON-RPC 2.0 over HTTP POST
+  mcp_protocol_version: '2024-11-05'
+  response_content_type: 'text/event-stream (a single "event: message" frame per response)'
+  required_request_headers:
+    content-type: application/json
+    accept: application/json, text/event-stream
+  session: none — no Mcp-Session-Id is issued or required; each POST stands alone
+  initialize_required: false (tools/list and tools/call succeed without a prior initialize)
+  methods_implemented: [initialize, tools/list, tools/call]
+  methods_absent: [resources/list, prompts/list]
+
+authentication:
+  style: none
+  detail: authentication/view-com-au-authentication.yml
+
+idempotency:
+  supported: false
+  reason: >-
+    The entire published surface is read-only — three query tools, no create,
+    update or delete. There is no idempotency key, no request-deduplication
+    header, and nothing to make idempotent. Repeating a call is inherently
+    safe and simply consumes quota.
+  header: null
+
+pagination:
+  style: page-number
+  parameters:
+  - name: page
+    tool: propertySearch
+    type: number
+    minimum: 1
+    default: 1
+    required: true
+  page_size: not exposed — the caller cannot set a page size
+  observed_page_size: 10 (a Fitzroy VIC search returned "Found 10 properties matching your criteria.")
+  response_fields:
+    total_count: not returned as a number; only a natural-language `text` summary
+    next_cursor: none
+    has_more: none
+  agent_guidance: >-
+    There is no way to know how many pages exist. Increment `page` until a call
+    returns an empty listings array, and budget the walk against the 100-request
+    / 300-second quota.
+
+sorting:
+  parameter: sortBy
+  required: true
+  default: recommended
+  values: [recommended, price-asc, price-desc, date-desc, updatedAt-desc, suburb-asc, suburb-desc, bedrooms-desc, bedrooms-asc]
+
+filtering:
+  location_model: >-
+    `locations` is an array, so one call can span several places. Each entry
+    requires `state` (act/nsw/nt/qld/sa/tas/vic/wa/ot) and optionally city,
+    suburb, postcode, street, LGA or school.
+  slug_pairing_rule: >-
+    Human names must be paired with their slug and, for suburbs, a postcode:
+    suburbName+suburbNameSlug+postcode, streetName+streetNameSlug,
+    lgaName+lgaSlug, schoolName+schoolNameSlug. Sending the name alone is a
+    validation error. Slugs are lowercase-hyphenated.
+  disambiguation_rule: >-
+    The tool description instructs that a bare major-city name (Sydney,
+    Melbourne, Brisbane, Perth, Adelaide, Canberra) with no postcode is a city
+    search, and that ambiguous "suburb vs city" cases should be confirmed with
+    the user rather than assumed.
+  geo: 'coordinates {latitude, longitude, radius} with radius 0-50 km, default 5'
+  sale_method: '[Lease, Sale, Sold, Auction] — default [Sale]'
+  other_filters: [propertyTypes, priceFrom, priceTo, bedrooms, bathrooms, carparks, landSizeMin, landSizeMax, features, exactBeds, exactBaths, exactCars, includeSurrounding, excludeUnderContract, inspectionStartAt, includeP360Properties]
+
+field_expansion:
+  supported: partial
+  flags:
+  - {tool: propertySearch, flag: includeP360Properties, default: false, effect: folds View's off-market "Property 360" inventory into on-market results}
+  - {tool: offMarketPropertyDetail, flag: includeArchistarAndNearBySchool, default: true, effect: includes Archistar planning data and nearby-school records}
+  sparse_fields: not supported — responses are fixed-shape
+
+response_shape:
+  success: 'result.content[] (text blocks) plus result.structuredContent (the machine-readable payload)'
+  structured_content: >-
+    propertySearch returns {text, listings[]}; propertyDetail returns a flat
+    listing object; offMarketPropertyDetail returns an off-market property
+    object. See data-model/view-com-au-data-model.yml.
+  dual_encoding_warning: >-
+    Every response carries both a natural-language `text` summary and the
+    structured payload. Agents should read structuredContent, not the prose.
+
+errors:
+  envelope: 'json-rpc-2.0 error object AND MCP tool-level isError: true'
+  detail: errors/view-com-au-error-codes.yml
+  critical_rule: >-
+    A failed lookup returns HTTP 200 with a normal `result`. `isError` must be
+    checked explicitly — the absence of an `error` object does not mean success.
+
+rate_limiting:
+  signalled: true
+  style: ietf-ratelimit-headers
+  detail: rate-limits/view-com-au-rate-limits.yml
+
+versioning:
+  api_version_header: none
+  scheme: >-
+    Two implicit versions only — the MCP protocol revision ("2024-11-05",
+    returned by initialize) and serverInfo.version ("1.0.0"). There is no URI
+    version, no version header, no date-pinning and no way for a caller to
+    request a prior behaviour.
+  detail: lifecycle/view-com-au-lifecycle.yml
+
+tracing:
+  request_id_header: none observed
+  correlation: >-
+    Only the JSON-RPC `id` the caller supplies is echoed. The server returns no
+    request identifier, so there is nothing to quote in a support request — and
+    no support channel for this surface exists anyway.
+
+caching:
+  cache_control: 'no-cache (observed on tools/list)'
+  etag: not observed
+  conditional_requests: not supported
+
+content_negotiation:
+  note: >-
+    Omitting `text/event-stream` from the Accept header is rejected by the
+    streamable-HTTP transport. Both media types must be offered.

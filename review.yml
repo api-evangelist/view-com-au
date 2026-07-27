@@ -346,3 +346,125 @@ actions:
     documents are the only machine-readable contracts View.com.au publishes, and
     both were harvested verbatim from live anonymous JSON-RPC responses. No spec
     was generated, inferred or reconstructed.
+
+sitePages:
+  note: >-
+    Real published pages on view.com.au, each confirmed by search-engine indexing
+    of the site's own <title> tag. Every one of them returns HTTP 403 to a
+    non-browser client (DataDome), including with a full desktop Chrome
+    User-Agent, so the status codes below record the machine reachability of a
+    page that genuinely exists for humans. These are the basis for the
+    TermsOfService, PrivacyPolicy, Support, HelpCenter, SignUp and About
+    pointers in apis.yml.
+  date: '2026-07-26'
+  pages:
+  - {url: 'https://view.com.au/terms-of-use/', title: 'Terms of Use | view.com.au', type: TermsOfService, machineStatus: 403}
+  - {url: 'https://view.com.au/customer-terms-conditions/', title: 'Customer Terms and Conditions | view.com.au', type: TermsOfService, machineStatus: 403}
+  - {url: 'https://view.com.au/privacy-policy/', title: View Media Group Privacy Policy, type: PrivacyPolicy, machineStatus: 403}
+  - {url: 'https://view.com.au/contact-us/', title: 'Contact Us | view.com.au', type: Support, machineStatus: 403}
+  - {url: 'https://view.com.au/frequently-asked-questions/', title: 'Browse our Frequently Asked Questions | view.com.au', type: HelpCenter, machineStatus: 403}
+  - {url: 'https://view.com.au/agency-hub/signup/', title: List for free with view.com.au, type: SignUp, machineStatus: 403}
+  - {url: 'https://view.com.au/who-we-are/', title: Learn more about view.com.au, type: About, machineStatus: 403}
+  - {url: 'https://view.com.au/news/', title: view.com.au news, type: Blog, machineStatus: 403}
+  contacts:
+    general: contactus@view.com.au
+    privacy: communications@vmg.com.au
+    phone: 1300 695 645
+  notFound:
+    developerPortal: none — no developer, docs, help or support subdomain resolves
+    documentation: none for any API surface
+    apiReference: none
+    gettingStarted: none
+    pricing: >-
+      No pricing page found. The agency signup page describes a free listing tier
+      and a Premium subscription but publishes no prices, so no Pricing pointer
+      is emitted.
+    roadmap: none
+    postman: none
+    statusPage: 'https://status.view.com.au/ does not resolve'
+    sdks: >-
+      No first-party client library exists. npm search for "view.com.au" and
+      "viewmediagroup" returned nothing, PyPI has no view-com-au or viewcomau
+      package, and the GitHub org github.com/realestateview has 0 public repos.
+    cli: none
+    components: none
+    sandbox: >-
+      sandbox.api.view.com.au exists but returns 403 with no public onboarding
+      path — it is a private partner environment, not a published sandbox, so no
+      Sandbox artifact is emitted.
+    webhooks: none
+    asyncapi: none
+    graphql: none — no /graphql surface found on any host
+    grpc: none
+    openapi: >-
+      Re-probed on 2026-07-26 against every host. mcp.view.com.au returns 404 for
+      /openapi.json, /swagger.json and /docs; api.view.com.au,
+      sandbox.api.view.com.au and view.com.au all return 403. No OpenAPI exists.
+
+enrichmentRounds:
+- round: 2
+  date: '2026-07-26'
+  method: search + probe + derive
+  liveVerification: >-
+    MCP server re-verified live and anonymous. tools/list returned HTTP 200 with
+    the same three tools; a tools/call to propertySearch returned real Fitzroy
+    VIC listings; a tools/call to propertyDetail returned a full listing record.
+    Rate-limit headers captured off the wire.
+  added:
+  - mcp/view-com-au-mcp.yml
+  - rate-limits/view-com-au-rate-limits.yml
+  - errors/view-com-au-error-codes.yml
+  - authentication/view-com-au-authentication.yml
+  - conventions/view-com-au-conventions.yml
+  - data-model/view-com-au-data-model.yml
+  - conformance/view-com-au-conformance.yml
+  - lifecycle/view-com-au-lifecycle.yml
+  - well-known/view-com-au-well-known.yml
+  - llms/view-com-au-llms.txt
+  - examples/view-com-au-mcp-tool-calls.json
+  - agentic-access/view-com-au-agentic-access.yml
+  - security/view-com-au-domain-security.yml
+  - skills/_index.yml
+  - skills/view-com-au-property-search.md
+  - skills/view-com-au-listing-detail.md
+  - skills/view-com-au-off-market-lookup.md
+  newFindings:
+  - >-
+      The MCP server emits IETF draft RateLimit header fields
+      (ratelimit-policy: 100;w=300 plus limit/remaining/reset) — the quota is
+      machine-readable even though nothing about the server is documented.
+  - >-
+      Error semantics captured live: -32601 for unimplemented methods, -32603
+      (not the correct -32602) carrying raw Zod validator output for argument
+      type errors, and tool-level isError results for unknown tools and
+      unresolvable ids. Not-found and upstream failure are indistinguishable.
+  - >-
+      initialize is not required — tools/list and tools/call succeed cold, with
+      no session id issued or expected.
+  - >-
+      Agency and agent records carry stable numeric ids and an isLlmChatEnabled
+      flag, but there is no agency or agent lookup tool; they can only be read
+      as embedded objects on a listing.
+  - >-
+      Terms of Use, Customer Terms, Privacy Policy, Contact Us, FAQ, agency
+      sign-up and who-we-are pages were located by search-engine indexing and
+      wired into apis.yml, though all remain 403 to machines.
+  - >-
+      No security.txt, no OAuth or OIDC discovery, no /.well-known/ document of
+      any kind on any of the four hosts. No trust center, no bug bounty, no
+      certification.
+  notEmitted:
+    idempotency: >-
+      The published surface is entirely read-only — three query tools, no writes,
+      no idempotency key. No Idempotency pointer.
+    sdks: no first-party client library exists in any registry.
+    statusPage: none exists.
+    deprecation: no deprecation or sunset policy exists.
+    security: no vulnerability disclosure programme or security policy was found.
+    compliance: no certification or compliance programme is published.
+    wellKnown: >-
+      The well-known artifact records an all-negative probe, so no WellKnown
+      pointer is wired.
+    toolCrosswalk: >-
+      Requires an OpenAPI to bind MCP tools to; View publishes none, so there is
+      nothing to cross-walk.

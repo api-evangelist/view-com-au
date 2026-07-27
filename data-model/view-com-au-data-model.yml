@@ -1,0 +1,140 @@
+generated: '2026-07-26'
+method: derived
+source: >-
+  mcp/view-com-au-mcp-tools.json (tool inputSchemas) + field names observed in
+  live propertySearch and propertyDetail responses on 2026-07-26
+notes: >-
+  There is no OpenAPI, no JSON Schema for responses, and no object reference
+  page. MCP tools publish an inputSchema but no outputSchema, so the response
+  side of this model is derived from the field names actually returned by live
+  calls. Only field names, types and relationships are recorded — no listing
+  content is stored, since the payloads are proprietary third-party records.
+  Fields marked observed:false are named in tool descriptions but were not seen
+  in the responses captured.
+
+entities:
+- name: Listing
+  aka: [property, on-market property]
+  key: propertyId
+  key_alias: id (propertyDetail returns the same identifier as a string `id`)
+  key_type: integer
+  example_key: 18071535
+  returned_by: [propertySearch, propertyDetail]
+  fields:
+  - {name: propertyId, type: integer, note: also `id` on detail}
+  - {name: address, type: object|string, note: object on search (street, suburb, state, postcode, unitNumber, streetNumber, fullAddress, coordinates), flattened string on detail}
+  - {name: price, type: object|string, note: '{display, isHidden} on search; string on detail'}
+  - {name: details, type: object, note: 'search only — {bedrooms, bathrooms, carSpaces, propertyType, propertyTypes[]}'}
+  - {name: bedrooms, type: integer}
+  - {name: bathrooms, type: integer}
+  - {name: carparks, type: integer}
+  - {name: landSize, type: integer}
+  - {name: landSizeSystem, type: string}
+  - {name: propertyType, type: string, enum: [House, 'Apartment & Unit', Studio, Townhouse, Land, Villa, Rural]}
+  - {name: description, type: string}
+  - {name: heading, type: string}
+  - {name: status, type: string}
+  - {name: listingStatus, type: string, example: On Market}
+  - {name: saleMethod, type: string, enum: [Lease, Sale, Sold, Auction]}
+  - {name: features, type: array}
+  - {name: heroImageUrl, type: string}
+  - {name: media, type: object, note: 'search only — {heroImage}'}
+  - {name: links, type: object, note: 'search only — {detailPage}'}
+  - {name: agencyId, type: integer}
+  - {name: agentIds, type: array<integer>}
+  - {name: nearbySchoolsRev, type: array|null}
+- name: Address
+  embedded_in: Listing
+  fields: [street, suburb, state, postcode, unitNumber, streetNumber, fullAddress, coordinates]
+- name: Coordinates
+  embedded_in: Address
+  fields: [latitude, longitude]
+- name: Agency
+  key: id
+  key_type: integer
+  returned_by: [propertySearch, propertyDetail]
+  fields: [id, _id, name, slug, address, suburbName, state, postcode, agencySource, logoFileName, logoLink, brandColour, brandContrastColour, agencyProfileLink, hideAddress, hideMakeAnOffer, isHideBybAgency, isLlmChatEnabled, showHomeEnergyScore, hidePropertyReview]
+  note: >-
+    `isLlmChatEnabled` on both agency and agent records is a per-office and
+    per-agent flag governing an LLM chat experience — View is modelling agent
+    AI availability as first-class data.
+- name: Agent
+  key: id
+  key_type: integer
+  returned_by: [propertySearch, propertyDetail]
+  fields: [id, _id, firstName, lastName, fullName, position, email, phone, mobile, agentPhotoFileName, agentPhotoLink, photoUrl, agentProfileLink, profileLink, isMobileHidden, isWebHidden, isLlmChatEnabled, showHomeEnergyScore]
+- name: Inspection
+  key: id
+  embedded_in: Listing
+  returned_by: [propertyDetail]
+  fields: [id, startAt, endAt, calendarUrl]
+- name: Image
+  embedded_in: Listing
+  returned_by: [propertyDetail]
+  fields: [url, sequence]
+- name: FloorPlan
+  embedded_in: Listing
+  returned_by: [propertyDetail]
+  fields: [url]
+- name: StatementOfInformation
+  aka: SOI
+  embedded_in: Listing
+  returned_by: [propertyDetail]
+  fields: [url]
+  note: Victorian statutory price-disclosure document.
+- name: OffMarketProperty
+  aka: 'Property 360 / P360'
+  key: seo_slug
+  key_type: string
+  returned_by: [offMarketPropertyDetail]
+  observed: false
+  fields_documented: [address, propertyType, bedrooms, bathrooms, carSpaces, landArea, priceEstimates, zoning, planningOverlays, nearbySchools, propertyHistory, images]
+  note: >-
+    Keyed by SEO slug, not by numeric id — a different identity space from
+    Listing. No slug corpus is published, so off-market records cannot be
+    enumerated. Surfaced inside on-market search via the
+    includeP360Properties flag.
+- name: Zoning
+  embedded_in: [Listing, OffMarketProperty]
+  observed: false
+  fields_documented: [zoningCode, description, localGovernmentArea, planningOverlays]
+- name: PlanningOverlay
+  embedded_in: Zoning
+  observed: false
+  categories: [environment, infrastructure, industry, bushfire, flood, heritage]
+- name: School
+  embedded_in: [Listing, OffMarketProperty]
+  observed: false
+  note: >-
+    Nearby-school data; the off-market tool couples it with Archistar planning
+    data behind includeArchistarAndNearBySchool.
+- name: PriceEstimate
+  embedded_in: OffMarketProperty
+  observed: false
+  note: View's automated price estimate for an off-market property.
+
+relationships:
+- {from: Listing, to: Agency, type: belongs_to, via: agencyId}
+- {from: Listing, to: Agent, type: has_many, via: agentIds}
+- {from: Agency, to: Agent, type: has_many, via: 'agents[] embedded on the listing'}
+- {from: Listing, to: Inspection, type: has_many, via: inspections}
+- {from: Listing, to: Image, type: has_many, via: images}
+- {from: Listing, to: FloorPlan, type: has_many, via: floorPlans}
+- {from: Listing, to: StatementOfInformation, type: has_many, via: statementOfInfo}
+- {from: Listing, to: School, type: has_many, via: nearbySchoolsRev}
+- {from: Listing, to: Zoning, type: has_one, via: zoning}
+- {from: OffMarketProperty, to: Zoning, type: has_one, via: zoning}
+- {from: Zoning, to: PlanningOverlay, type: has_many, via: planningOverlays}
+- {from: OffMarketProperty, to: PriceEstimate, type: has_one, via: priceEstimates}
+- {from: OffMarketProperty, to: School, type: has_many, via: nearbySchools}
+
+identity_spaces:
+- {entity: Listing, id: numeric propertyId, resolvable_by: propertyDetail}
+- {entity: Agency, id: numeric id, resolvable_by: 'none — no agency tool exists'}
+- {entity: Agent, id: numeric id, resolvable_by: 'none — no agent tool exists'}
+- {entity: OffMarketProperty, id: SEO slug, resolvable_by: offMarketPropertyDetail}
+
+gaps:
+- Agency and Agent have stable numeric ids but no lookup tool — they can only be read as embedded objects on a listing.
+- No response schema is published for any tool; MCP outputSchema is not used.
+- No sold-price history, valuation/AVM, tenancy, conveyancing or commercial entity is exposed.

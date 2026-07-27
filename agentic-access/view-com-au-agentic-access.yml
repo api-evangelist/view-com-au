@@ -1,0 +1,102 @@
+generated: '2026-07-26'
+method: generated
+source: mcp/view-com-au-mcp-tools.json
+notes: >-
+  A recommended x-agentic-access execution contract per MCP tool, following the
+  Curity "Access Intelligence" model. This is a governance starting point
+  authored by API Evangelist, not a claim published by View.com.au — the
+  provider publishes no agent access guidance at all. There is no OpenAPI, so
+  the unit of access here is the MCP tool rather than an operationId. `audience`
+  is left null to be bound per deployment.
+
+summary:
+  operations: 3
+  by_action_class:
+    connected: 3
+    acting: 0
+  by_consequence:
+    read: 3
+    write: 0
+    physical: 0
+    safety-critical: 0
+  human_in_the_loop: 0
+  audit_required: 0
+  note: >-
+    The published surface is entirely read-only, which is why every contract
+    below sits in the lowest consequence band. The real agentic risk here is not
+    mutation, it is unattributable bulk read: there is no credential, so there
+    is no identity, no attribution and no quota negotiation — only an anonymous
+    100-request/300-second ceiling shared by every caller from the same origin.
+
+operations:
+- operation: propertySearch
+  surface: mcp
+  transport: https://mcp.view.com.au/mcp
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    audience: null
+    scope: property:search
+    token:
+      required: false
+      ttl-max: 3600
+      note: No credential exists. Rate limiting is the only control.
+    escalation: none
+    human-in-the-loop: not-required
+    audit: recommended
+    data-sensitivity: >-
+      Returns identified third-party records — property addresses, geocodes,
+      prices, agency and agent names, emails and phone numbers. Personal data
+      under the Australian Privacy Act, and proprietary portal content that is
+      free to call but not open-licensed.
+    rate-guidance: >-
+      100 requests per 300 seconds, shared and anonymous. Paginate deliberately;
+      an agent cannot request more quota because it cannot identify itself.
+- operation: propertyDetail
+  surface: mcp
+  transport: https://mcp.view.com.au/mcp
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    audience: null
+    scope: property:read
+    token:
+      required: false
+      ttl-max: 3600
+    escalation: none
+    human-in-the-loop: not-required
+    audit: recommended
+    data-sensitivity: >-
+      Higher than search: returns agent email, phone and mobile, inspection
+      schedules, floor plans and the Statement of Information. Do not
+      redistribute agent contact details or use them for outbound contact.
+- operation: offMarketPropertyDetail
+  surface: mcp
+  transport: https://mcp.view.com.au/mcp
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    audience: null
+    scope: property:offmarket:read
+    token:
+      required: false
+      ttl-max: 3600
+    escalation: none
+    human-in-the-loop: not-required
+    audit: required
+    data-sensitivity: >-
+      The most sensitive of the three. Off-market records describe properties
+      that are NOT listed for sale — an owner has not chosen to publish them —
+      and include automated price estimates, property history, zoning and
+      planning overlays. Treat estimates as View's opinion, never as a
+      valuation, and never present them to a consumer as an appraisal.
+    escalation-note: >-
+      Off-market lookups are the operation most likely to be repurposed for
+      unsolicited vendor prospecting. Bind an audience and require an audit
+      trail before allowing an agent to run these at volume.
+
+deployment_guidance:
+- Cache aggressively; the quota is the binding constraint and there is no way to raise it.
+- Attribute nothing to a user identity — the surface returns no identity and accepts none.
+- Re-read tools/list each session; the server advertises listChanged and publishes no versioning or deprecation policy.
+- Treat the absence of terms governing the MCP surface as unresolved rather than as permission; the site's Terms of Use govern the website, and no separate API or agent terms were found.
