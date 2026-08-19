@@ -2,12 +2,9 @@ generated: '2026-07-26'
 method: searched
 source: https://mcp.view.com.au/mcp
 status: published
-notes: >-
-  Harvested directly from the live server by anonymous JSON-RPC. View.com.au
-  publishes no human-readable documentation for this server; the manifest below
-  is assembled entirely from verbatim initialize and tools/list responses saved
-  alongside this file. Re-verified live on 2026-07-26.
-
+notes: Harvested directly from the live server by anonymous JSON-RPC. View.com.au publishes no human-readable
+  documentation for this server; the manifest below is assembled entirely from verbatim initialize and
+  tools/list responses saved alongside this file. Re-verified live on 2026-07-26.
 server:
   name: view-com-au-mcp-server
   version: 1.0.0
@@ -29,12 +26,9 @@ server:
     resources: false
     prompts: false
   discovery:
-    note: >-
-      Discovered by certificate-transparency subdomain enumeration, not by
-      documentation. GET on /, /sse, /docs, /health, /openapi.json,
-      /robots.txt and /.well-known/mcp.json all return 404; GET /mcp returns
-      405 with a JSON-RPC "Method not allowed."
-
+    note: Discovered by certificate-transparency subdomain enumeration, not by documentation. GET on /,
+      /sse, /docs, /health, /openapi.json, /robots.txt and /.well-known/mcp.json all return 404; GET /mcp
+      returns 405 with a JSON-RPC "Method not allowed."
 access:
   gate: none
   credential: none
@@ -44,63 +38,72 @@ access:
     policy: 100;w=300
     limit: 100
     window_seconds: 300
-    headers: [ratelimit-policy, ratelimit-limit, ratelimit-remaining, ratelimit-reset]
+    headers:
+    - ratelimit-policy
+    - ratelimit-limit
+    - ratelimit-remaining
+    - ratelimit-reset
     source: rate-limits/view-com-au-rate-limits.yml
-  data_licence: >-
-    Not open data. The transport is ungated but the listing, agency, agent and
-    off-market records returned are proprietary portal content.
-
+  data_licence: Not open data. The transport is ungated but the listing, agency, agent and off-market
+    records returned are proprietary portal content.
 tools:
 - name: propertySearch
-  description: >-
-    Search for on-market properties (listings) by location (state, city, suburb,
-    postcode, street, LGA, school), property type, price range, bedrooms,
-    bathrooms, car spaces, land size, features, sale method (sale/auction) and
-    sorting options. Supports searching across multiple locations
-    simultaneously.
+  description: Search for on-market properties (listings) by location (state, city, suburb, postcode,
+    street, LGA, school), property type, price range, bedrooms, bathrooms, car spaces, land size, features,
+    sale method (sale/auction) and sorting options. Supports searching across multiple locations simultaneously.
   access: read
   input_schema: mcp/view-com-au-mcp-tools.json#/result/tools/0/inputSchema
-  required_arguments: [page, sortBy, saleMethod, includeP360Properties, includeSurrounding, excludeUnderContract]
+  required_arguments:
+  - page
+  - sortBy
+  - saleMethod
+  - includeP360Properties
+  - includeSurrounding
+  - excludeUnderContract
   verified:
     date: '2026-07-26'
     status: 200
     note: Returned real on-market Fitzroy VIC 3065 listings.
 - name: propertyDetail
-  description: >-
-    Get comprehensive on-market property (listing) details by listing ID:
-    address, property type, bedrooms, bathrooms, carparks, land size, price,
-    status, description, heading, inspection times, floor plans, Statement of
-    Information (SOI), nearby schools, images, agency, agents and zoning
-    (zoning code, description, local government area, and planning overlays
-    such as bushfire, flood and heritage).
+  description: 'Get comprehensive on-market property (listing) details by listing ID: address, property
+    type, bedrooms, bathrooms, carparks, land size, price, status, description, heading, inspection times,
+    floor plans, Statement of Information (SOI), nearby schools, images, agency, agents and zoning (zoning
+    code, description, local government area, and planning overlays such as bushfire, flood and heritage).'
   access: read
   input_schema: mcp/view-com-au-mcp-tools.json#/result/tools/1/inputSchema
-  required_arguments: [listingId]
+  required_arguments:
+  - listingId
   verified:
     date: '2026-07-26'
     status: 200
     note: Returned a full listing detail object for a live Fitzroy VIC listing id.
 - name: offMarketPropertyDetail
-  description: >-
-    Get comprehensive off-market property details by SEO slug: address, property
-    type, bedrooms, bathrooms, car spaces, land area, price estimates, zoning
-    (code, description, LGA, and planning overlays for environment,
-    infrastructure, industry, bushfire, flood and heritage), nearby schools,
-    property history and images.
+  description: 'Get comprehensive off-market property details by SEO slug: address, property type, bedrooms,
+    bathrooms, car spaces, land area, price estimates, zoning (code, description, LGA, and planning overlays
+    for environment, infrastructure, industry, bushfire, flood and heritage), nearby schools, property
+    history and images.'
   access: read
   input_schema: mcp/view-com-au-mcp-tools.json#/result/tools/2/inputSchema
-  required_arguments: [seo_slug, isbot, includeArchistarAndNearBySchool]
+  required_arguments:
+  - seo_slug
+  - isbot
+  - includeArchistarAndNearBySchool
   verified:
     date: '2026-07-26'
     status: 200
-    note: >-
-      Tool responded; the slug tried was an on-market listing slug and the
-      server returned a tool-level isError "Failed to fetch property detail
-      from API". No off-market slug corpus is published, so no successful
-      off-market call is claimed.
-
+    note: Tool responded; the slug tried was an on-market listing slug and the server returned a tool-level
+      isError "Failed to fetch property detail from API". No off-market slug corpus is published, so no
+      successful off-market call is claimed.
 artifacts:
 - file: mcp/view-com-au-mcp-initialize.json
   description: Verbatim initialize response (protocolVersion, capabilities, serverInfo).
 - file: mcp/view-com-au-mcp-tools.json
   description: Verbatim tools/list response — the three tool contracts with full JSON Schema 2020-12 inputSchema.
+deployment:
+  mode: remote
+  endpoint: https://mcp.view.com.au/mcp
+  verified: probed
+  probe: live
+  tools: 3
+  checked: '2026-08-12'
+  source: catalog MCP census
