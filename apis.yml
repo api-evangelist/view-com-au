@@ -32,7 +32,7 @@ tags:
 - Agent-Native
 created: '2026-07-26'
 modified: '2026-07-26'
-specificationVersion: '0.19'
+specificationVersion: '0.23'
 apis:
 - aid: view-com-au:view-com-au-property-mcp-server
   name: View.com.au Property MCP Server
