@@ -21,6 +21,16 @@ description: >-
   organizations at all.
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/view-com-au.png
 tags:
+- Real-Estate
+- Australia
+- Property Listings
+- Property Portal
+- PropTech
+- Rentals
+- Off-Market Property Data
+- MCP
+- agent-native
+tags_raw:
 - Real Estate
 - Australia
 - Property Listings
@@ -55,6 +65,12 @@ apis:
   humanURL: https://view.com.au/
   baseURL: https://mcp.view.com.au/mcp
   tags:
+  - MCP
+  - Property Listings
+  - Property Search
+  - Off-Market Property Data
+  - Australia
+  tags_raw:
   - Model Context Protocol
   - Property Listings
   - Property Search
