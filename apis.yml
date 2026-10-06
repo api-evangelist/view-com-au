@@ -68,7 +68,7 @@ tags_raw:
 - agent-native
 - Real-Estate
 created: '2026-07-26'
-modified: '2026-07-26'
+modified: '2026-10-06'
 specificationVersion: '0.23'
 apis:
 - aid: view-com-au:view-com-au-property-mcp-server
@@ -130,6 +130,8 @@ apis:
   - type: Website
     url: https://view.com.au/
 common:
+- url: https://view.com.au/news/rss.xml
+  type: BlogRSS
 - type: Authentication
   url: authentication/view-com-au-authentication.yml
 - type: Conformance
