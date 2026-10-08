@@ -130,6 +130,8 @@ apis:
   - type: Website
     url: https://view.com.au/
 common:
+- type: RateLimits
+  url: rate-limits/view-com-au-rate-limits.yml
 - url: https://view.com.au/news/rss.xml
   type: BlogRSS
 - type: Authentication
