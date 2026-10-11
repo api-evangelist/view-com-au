@@ -1,0 +1,11 @@
+[
+  {
+    "repo": "view-com-au",
+    "captured_at": "2026-10-11T194156",
+    "source_url": "https://view.com.au/",
+    "source_type": "Website",
+    "file": "view-com-au-2026-10-11T194156.png",
+    "bytes": 10884,
+    "capture": "playwright-local"
+  }
+]
